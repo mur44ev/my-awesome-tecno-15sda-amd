@@ -1,0 +1,10 @@
+NAME        MODEL                  SIZE TYPE FSTYPE PARTTYPENAME                 TRAN
+sda         Flash Drive           59,8G disk                                     usb
+└─sda1                            59,8G part exfat  Microsoft basic data         
+zram0                               15G disk swap                                
+nvme0n1     KBG50ZNV512G KIOXIA  476,9G disk                                     nvme
+├─nvme0n1p1                        4,5G part vfat   EFI System                   nvme
+├─nvme0n1p2                         16M part        Microsoft reserved           nvme
+├─nvme0n1p3                      313,8G part ntfs   Microsoft basic data         nvme
+├─nvme0n1p4                      154,7G part btrfs  Linux filesystem             nvme
+└─nvme0n1p5                     1015,1M part ntfs   Windows recovery environment nvme
