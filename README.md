@@ -26,12 +26,15 @@ scripts/      Hardware collection / ACPI helper scripts
 
 SMBIOS model used: **MacBookPro16,2**. Generate serials with [GenSMBIOS](https://github.com/corpnewt/GenSMBIOS) or `macserial`. OC boot logs and old config snapshots were removed as well.
 
-## Usage
+## Usage (fresh install)
 
-1. Copy `EFI/` to your EFI (ESP) partition.
-2. Generate and fill in your own SMBIOS serials (see above).
-3. Review `config.plist` — it was tuned for this specific laptop (audio layout, Wi-Fi, USB mapping).
-4. Boot.
+1. Get a macOS recovery/installer image — e.g. with OpenCore's `macrecovery` (in `Utilities/macrecovery/`) written to a FAT32 USB stick.
+2. Copy this repo's `EFI/` onto that USB's ESP.
+3. Generate and fill in your own SMBIOS serials (see above).
+4. Review `config.plist` — it was tuned for this specific laptop (audio layout, Wi-Fi, USB mapping).
+5. Boot from USB (`EFI/Boot/BOOTX64.EFI` is a copy of `OpenCore.efi`, so firmware picks it up without a boot entry), install macOS, then copy `EFI/` to the internal ESP.
+
+After a Linux+OC dual boot the ESP may hold other loaders (Limine/GRUB/systemd) — that is fine, boot through the firmware boot menu if needed.
 
 ## Disclaimer
 
