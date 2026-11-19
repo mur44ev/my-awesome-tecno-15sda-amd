@@ -1,76 +1,37 @@
-# TECNO K15S AMD — постоянная подсветка клавиатуры
+# TECNO K15S AMD — Backlight Timeout Fix
 
-Небольшой фоновый помощник для **TECNO MEGABOOK K15S AMD / K15SDA**: сохраняет подсветку до ручного выключения штатной клавишей. Полный TECNO PC Manager для работы запускать не нужно.
+Disable the stock **15-second keyboard backlight timeout** on Windows. Keep the light on until you turn it off with F1 / Fn+F1.
 
-Проверено на одном MEGABOOK K15S AMD, BIOS **1.10**. Пользователь подтвердил, что подсветка не гаснет при бездействии и штатная клавиша по-прежнему выключает её. Другие модели и версии EC не проверены; запуск с другой версией BIOS заблокирован.
+A small background helper resets the idle timer every four seconds. Brightness controls still work. It starts when you sign in; no BIOS flashing is involved.
 
-## Как это работает
+**Tested:** TECNO MEGABOOK K15SDA AMD, BIOS 1.10, Windows x64. Other models and BIOS versions are blocked.
 
-Во время наблюдения регистр EC `0x26` увеличивался примерно на 10 единиц в секунду, останавливался на `150` и сбрасывался при вводе с клавиатуры. Его сброс раз в четыре секунды устранил автоматическое отключение подсветки на проверенном ноутбуке.
+## Install
 
-Помощник читает уровень подсветки из `0x1A` и сбрасывает `0x26`, только если уровень ненулевой. Регистр яркости не изменяется, поэтому ручное выключение сохраняется. Повтор команды яркости и короткое переключение уровней в ходе проверки таймер не отключали.
+You need Python x64 3.8+, the original `PCInformation.dll` and `inpoutx64.dll` from [TECNO PC Manager](https://www.tecno-mobile.com/support/support-detail-laptops/pcmanager/), and an already running `inpoutx64` driver. The helper does not install drivers.
 
-Используются внутренние функции оригинальной `PCInformation.dll` из TECNO PC Manager: чтение по RVA `0x76FD0`, запись по RVA `0x77050`. Адреса привязаны к **точному SHA256** DLL; при другой версии помощник отказывается обращаться к оборудованию. Проверяются модель ноутбука, сигнатура EC и диапазоны прочитанных значений.
+The supported DLL comes from `TECNOPCManagerInstaller_1.0.1.27.exe`. Vendor binaries are not included.
 
-Это обход в Windows, а не изменение BIOS или прошивки EC. Он действует во время сеанса пользователя. Автозапуск настроен через папку Startup; проверка после перезагрузки ещё не проводилась.
-
-## Требования
-
-- Windows x64, проверенная модель MEGABOOK K15S AMD.
-- Обычная установка Python x64 3.8+ с `python.exe` и `pythonw.exe`; пакеты pip не нужны. Фактическая проверка выполнена с Python 3.13.
-- Оригинальные `PCInformation.dll` и `inpoutx64.dll` из [официального TECNO PC Manager](https://www.tecno-mobile.com/support/support-detail-laptops/pcmanager/).
-- Уже установленный и запущенный драйвер `inpoutx64`. На проверенном ноутбуке он уже был установлен с автоматическим стартом. Этот проект не устанавливает драйверы и не меняет их настройки.
-
-Проверенная DLL `PCInformation.dll`:
-
-```text
-401da4767c0de662d59aa397ef699de52fbfe8bbdbe4b41cd958edd02510cd57
-```
-
-Эта версия получена из официального `TECNOPCManagerInstaller_1.0.1.27.exe`. Подписи оригинальных DLL проверяются при установке. Бинарные файлы TECNO и драйверы в репозиторий не включены.
-
-## Установка
-
-Сохрани две оригинальные DLL в отдельную папку, затем выполни из PowerShell в папке проекта:
+Run PowerShell from this folder:
 
 ```powershell
 .\Install.ps1 -DependencyDirectory 'C:\path\to\original-dlls'
 ```
 
-Если Python не найден автоматически:
+Optional: add `-ValidateOnly` to check requirements without installing, or `-PythonExecutable 'C:\path\to\python.exe'` to select Python.
 
-```powershell
-.\Install.ps1 -DependencyDirectory 'C:\path\to\original-dlls' -PythonExecutable 'C:\path\to\python.exe'
-```
+## Controls
 
-Предварительная проверка без установки:
+- **F1 / Fn+F1:** change brightness or turn the light off.
+- **Disable the helper:** run `.\Disable.ps1`.
+- **Enable it again:** run `.\Enable.ps1`.
 
-```powershell
-.\Install.ps1 -DependencyDirectory 'C:\path\to\original-dlls' -ValidateOnly
-```
+Installed files and status: `%LOCALAPPDATA%\TecnoBacklightKeepAlive`.
 
-Установка копирует помощник и DLL в `%LOCALAPPDATA%\TecnoBacklightKeepAlive`, создаёт ярлык в автозагрузке текущего пользователя и запускает `pythonw.exe` без консольного окна. Повторные экземпляры блокируются именованным mutex.
+## Details
 
-## Управление
+The fix was physically tested: the light stays on when idle, and manual off still works. Sign-in startup is configured; a reboot test has not been performed.
 
-Свет и его яркость переключаются штатной клавишей F1 / Fn+F1.
+Read [how it works](docs/how-it-works.md) for the EC register, DLL hash and compatibility checks. The helper only works during your Windows session.
 
-Чтобы отключить сам помощник, включая последующие входы в Windows:
-
-```powershell
-.\Disable.ps1
-```
-
-Чтобы вернуть помощник:
-
-```powershell
-.\Enable.ps1
-```
-
-Диагностика: `%LOCALAPPDATA%\TecnoBacklightKeepAlive\status.json`. При неожиданном значении или несовпадении контрольной суммы помощник прекращает работу. Аппаратный доступ через стороннюю DLL может завершить процесс до записи диагностической ошибки.
-
-## Ограничения
-
-Запись в EC зависит от модели и прошивки. Не обходи проверки модели или хеша для запуска на другой плате. Совпадение сигнатуры EC само по себе не доказывает совместимость. Перед изменениями протокола нужны наблюдения и проверка физического поведения на конкретной машине.
-
-Проект не связан с TECNO. MIT-лицензия распространяется только на исходники этого проекта, а не на ПО производителя.
+MIT license for this project's source code. TECNO software is not included or covered by that license.
