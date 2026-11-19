@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.dll
+*.sys
+*.exe
+*.zip
+*.7z
+status.json
+disabled.flag
+.venv/
